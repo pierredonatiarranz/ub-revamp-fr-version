@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UB - Schritt 3 (Prototyp)</title>
+<style>
+  :root {
+    --brand: #4E49FC;
+    --brand-hover: #3F3BD6;
+    --brand-bg: #F5F5FF;
+    --brand-border: #8784FD;
+    --text-default: #26262C;
+    --text-subdued: #656576;
+    --text-disabled: #A2A1AF;
+    --border-default: #E8E8EC;
+    --bg-white: #FFFFFF;
+    --bg-neutral: #F7F7F8;
+    --bg-info: #F2F9FD;
+    --text-info: #206E92;
+    --success: #13762C;
+    --success-bg: #EFFBF2;
+    --destructive-bg: #B84A9E;
+    --destructive-hover: #9E3E88;
+    --error: #CA1E12;
+    --sidebar-bg: #FFFFFF;
+    --right-rail-bg: #F8E7F0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    color: var(--text-default);
+    background: var(--bg-neutral);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; }
+
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr 56px;
+    min-height: 100vh;
+  }
+
+  /* ====== SIDEBAR ====== */
+  .sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-default);
+    letter-spacing: -0.01em;
+  }
+
+  .logo-mark {
+    width: 22px;
+    height: 22px;
+    background: var(--brand);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .bell {
+    position: relative;
+    color: var(--text-subdued);
+    cursor: pointer;
+  }
+
+  .bell::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 7px;
+    height: 7px;
+    background: var(--brand);
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 12px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-default);
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--bg-neutral); }
+  .nav-item.active > .nav-item-label { color: var(--brand); font-weight: 600; }
+  .nav-item-label { display: flex; align-items: center; gap: 12px; }
+  .nav-item-icon {
+    width: 18px; height: 18px;
+    color: var(--text-subdued);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item.active .nav-item-icon { color: var(--brand); }
+  .nav-badge { color: var(--text-subdued); font-size: 13px; }
+  .chevron { color: var(--text-disabled); transition: transform 0.15s; }
+  .nav-item.open .chevron { transform: rotate(90deg); }
+  .nav-subitems { padding: 2px 0 6px 42px; }
+  .nav-subitem {
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-default);
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .nav-subitem:hover { background: var(--bg-neutral); }
+  .nav-subitem.active { color: var(--brand); font-weight: 600; }
+
+  .sidebar-user {
+    padding: 16px;
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg-neutral); color: var(--text-default);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .user-name { flex: 1; font-size: 14px; color: var(--text-default); }
+
+  /* ====== MAIN ====== */
+  .main {
+    padding: 32px 40px 96px;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--brand);
+    font-size: 14px;
+    text-decoration: none;
+    margin-bottom: 16px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    gap: 24px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-default);
+    line-height: 32px;
+  }
+
+  .btn-destructive {
+    background: var(--destructive-bg); color: white; border: none;
+    padding: 10px 20px; font-size: 14px; font-weight: 500;
+    border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  .btn-destructive:hover { background: var(--destructive-hover); }
+
+  /* ====== STEPPER ====== */
+  .stepper {
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 900px; margin: 0 auto 40px; padding: 0 20px;
+  }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 2; }
+  .step-number {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 500;
+    background: white; color: var(--text-subdued);
+    border: 1.5px solid var(--border-default);
+  }
+  .step.done .step-number, .step.active .step-number { background: var(--brand); color: white; border-color: var(--brand); }
+  .step-label { font-size: 14px; color: var(--text-subdued); }
+  .step.active .step-label { color: var(--brand); font-weight: 600; }
+  .step.done .step-label { color: var(--text-default); }
+  .step-line { flex: 1; height: 1.5px; background: var(--border-default); margin: 0 -8px; margin-top: -20px; position: relative; z-index: 1; }
+  .step-line.done { background: var(--brand); }
+
+  /* ====== CARDS ====== */
+  .section-card {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .section-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .section-caret { color: var(--brand); font-size: 14px; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--text-default); }
+  .section-desc { color: var(--text-default); font-size: 14px; margin-bottom: 16px; max-width: 680px; }
+
+  .btn-primary {
+    background: var(--brand); color: white; border: none;
+    padding: 10px 20px; font-size: 14px; font-weight: 500;
+    border-radius: 8px; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--brand-hover); }
+  .btn-primary:disabled { background: var(--text-disabled); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: white; color: var(--text-default);
+    border: 1px solid var(--border-default);
+    padding: 10px 20px; font-size: 14px; font-weight: 500;
+    border-radius: 8px; cursor: pointer;
+  }
+  .btn-secondary:hover { background: var(--bg-neutral); }
+
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+  /* ====== TRACKING CARD (vue 1) ====== */
+  .tracking-card {
+    background: white; border: 1px solid var(--border-default);
+    border-radius: 8px; padding: 20px 24px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .tracking-illus {
+    width: 80px; height: 80px; flex-shrink: 0;
+    background: var(--bg-neutral); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tracking-content { flex: 1; }
+  .tracking-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .tracking-content ul { list-style: disc; padding-left: 20px; font-size: 14px; }
+  .tracking-content ul li { margin-bottom: 2px; }
+  .tracking-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 130px; }
+  .tracking-count { color: var(--brand); font-size: 18px; font-weight: 700; }
+
+  .info-banner {
+    background: var(--bg-info); border-radius: 8px;
+    padding: 16px 20px; display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .info-banner-icon { color: var(--text-info); flex-shrink: 0; margin-top: 1px; }
+  .info-banner-body { font-size: 14px; }
+  .info-banner-title { font-weight: 600; margin-bottom: 4px; }
+
+  /* ====== FOOTER ====== */
+  .footer-bar {
+    position: fixed; bottom: 0; left: 220px; right: 56px;
+    background: white; border-top: 1px solid var(--border-default);
+    padding: 16px 40px;
+    display: flex; justify-content: center; gap: 12px;
+    z-index: 10;
+  }
+
+  /* ====== RAIL DROIT ====== */
+  .right-rail {
+    background: var(--right-rail-bg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 0; gap: 14px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .rail-icon { width: 20px; height: 20px; color: #8A4A72; cursor: pointer; opacity: 0.7; }
+  .rail-icon:hover { opacity: 1; }
+
+  .help-bubble {
+    position: fixed; bottom: 84px; right: 14px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--brand-bg); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; cursor: pointer; z-index: 20;
+  }
+
+  /* ====== PROTO NOTE ====== */
+  .proto-note {
+    position: fixed; top: 16px; right: 76px;
+    background: #FFF7EB; color: #955804;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 500; z-index: 100;
+    border: 1px solid #F5D9A6;
+    pointer-events: none;
+  }
+
+  /* ====== VIEW SWITCHING ====== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ====== VUE 2 : SAISIR DES VOTES ====== */
+  .sub-stepper {
+    display: flex; flex-direction: column; gap: 24px;
+    max-width: 900px; margin: 0;
+  }
+
+  .sub-step {
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+
+  .sub-step-marker {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 14px; font-weight: 600;
+    margin-top: 2px;
+  }
+  .sub-step.done .sub-step-marker {
+    background: white; color: var(--success);
+    border: 2px solid var(--success);
+  }
+  .sub-step.active .sub-step-marker {
+    background: var(--brand); color: white;
+  }
+  .sub-step.todo .sub-step-marker {
+    background: white; color: var(--text-subdued);
+    border: 2px solid var(--border-default);
+  }
+
+  .sub-step-content { flex: 1; min-width: 0; }
+  .sub-step-title { font-weight: 700; font-size: 16px; margin-bottom: 12px; }
+
+  .form-label { font-size: 14px; font-weight: 500; margin-bottom: 6px; display: block; }
+  .form-select {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--border-default); border-radius: 8px;
+    font-size: 14px; background: white; font-family: inherit;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23656576' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    padding-right: 40px; cursor: pointer;
+  }
+  .form-select:focus { outline: none; border-color: var(--brand-border); }
+
+  .resolution-card {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .resolution-title {
+    font-weight: 700; font-size: 15px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .resolution-title .info-icon {
+    color: var(--text-subdued); cursor: help;
+  }
+  .resolution-desc {
+    font-size: 14px; color: var(--text-default);
+    margin-bottom: 16px;
+  }
+
+  .vote-buttons { display: flex; gap: 8px; margin-bottom: 12px; }
+  .vote-btn {
+    padding: 8px 20px; border: 1px solid var(--border-default);
+    background: white; border-radius: 8px;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; color: var(--text-default);
+  }
+  .vote-btn:hover { background: var(--bg-neutral); }
+  .vote-btn.selected.pour { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+  .vote-btn.selected.abstention { background: var(--bg-neutral); border-color: var(--text-subdued); color: var(--text-default); }
+  .vote-btn.selected.contre { background: #FFF5F5; border-color: var(--error); color: var(--error); }
+
+  .add-comment-btn {
+    background: none; border: none; color: var(--brand);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    padding: 0; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .add-comment-btn:hover { text-decoration: underline; }
+
+  .proof-upload-area {
+    border: 2px dashed var(--border-default);
+    border-radius: 8px; padding: 32px 24px;
+    text-align: center; background: var(--bg-neutral);
+  }
+  .proof-upload-area p { font-size: 14px; color: var(--text-subdued); margin-bottom: 12px; }
+
+  /* ====== VUE 3 : VOIR LES VOTES ====== */
+  .votes-table-card {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .votes-table-header {
+    padding: 20px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .votes-table-header h3 { font-size: 16px; font-weight: 700; }
+
+  .votes-table { width: 100%; border-collapse: collapse; }
+  .votes-table thead th {
+    text-align: left; padding: 14px 24px;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-subdued);
+    background: var(--bg-neutral);
+    border-bottom: 1px solid var(--border-default);
+  }
+  .votes-table tbody td {
+    padding: 18px 24px; font-size: 14px;
+    border-bottom: 1px solid var(--border-default);
+    vertical-align: middle;
+  }
+  .votes-table tbody tr:last-child td { border-bottom: none; }
+
+  .trash-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--error); padding: 6px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .trash-btn:hover { background: #FFF5F5; }
+
+  .actions-dropdown {
+    background: var(--brand); color: white; border: none;
+    padding: 10px 16px; font-size: 14px; font-weight: 500;
+    border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .actions-dropdown:hover { background: var(--brand-hover); }
+
+  .page-header-simple {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+  }
+
+  /* Footer spacing compensation when no footer */
+  .view.active.no-footer + * { display: none; }
+  .view[data-view="saisir"].active ~ .footer-bar,
+  .view[data-view="voir"].active ~ .footer-bar,
+  .view[data-view="closed"].active ~ .footer-bar {
+    display: none;
+  }
+
+  /* ====== VUE 4 : VOTES CLOS ====== */
+  .btn-outlined-brand {
+    background: white; color: var(--brand);
+    border: 1px solid var(--brand);
+    padding: 10px 20px; font-size: 14px; font-weight: 500;
+    border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  .btn-outlined-brand:hover { background: var(--brand-bg); }
+
+  .closed-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    margin-top: 16px;
+  }
+  @media (max-width: 1100px) {
+    .closed-layout { grid-template-columns: 1fr; }
+  }
+
+  .closed-col-title {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .reso-accordion {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .reso-accordion.open {
+    border-color: var(--brand);
+    background: var(--brand-bg);
+  }
+  .reso-accordion-header {
+    padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; cursor: pointer; user-select: none;
+  }
+  .reso-accordion:not(.open) .reso-accordion-header:hover { background: var(--bg-neutral); }
+  .reso-accordion-title-wrap {
+    display: flex; align-items: center; gap: 12px;
+    flex: 1; min-width: 0;
+  }
+  .reso-accordion-title {
+    font-size: 15px; font-weight: 600; color: var(--text-default);
+  }
+  .reso-accordion.open .reso-accordion-title { color: var(--brand); }
+  .reso-accordion .chev {
+    color: var(--text-subdued);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .reso-accordion.open .chev { transform: rotate(180deg); color: var(--brand); }
+
+  .status-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-tag.approved {
+    background: var(--success-bg); color: var(--success);
+  }
+  .status-tag.rejected {
+    background: #FFF5F5; color: var(--error);
+  }
+
+  .reso-accordion-body {
+    display: none;
+    padding: 0 20px 20px;
+    font-size: 14px;
+    color: var(--text-default);
+    line-height: 1.55;
+  }
+  .reso-accordion.open .reso-accordion-body { display: block; }
+
+  .pdf-card {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .pdf-icon-box {
+    width: 32px; height: 36px;
+    background: #FFEBEA; color: var(--error);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 10px;
+    flex-shrink: 0;
+  }
+  .pdf-filename {
+    flex: 1; font-size: 14px; color: var(--text-default);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pdf-download { color: var(--text-subdued); cursor: pointer; flex-shrink: 0; }
+  .pdf-download:hover { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<div class="proto-note">Prototyp — 4 navigierbare Ansichten</div>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo">
+        <div class="logo-mark">M</div>
+        <span>matera</span>
+      </div>
+      <div class="bell">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+          <span>Übersicht</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg></div>
+          <span>Meine WEG</span>
+        </div>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <span>Mitteilungen</span>
+          <span class="nav-badge">29</span>
+        </div>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <span>Finanzen</span>
+          <span class="nav-badge">81</span>
+        </div>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="nav-item active open">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <span>Versammlungen</span>
+        </div>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="nav-subitems">
+        <div class="nav-subitem">Eigentümerversammlungen</div>
+        <div class="nav-subitem active">Umlaufbeschlüsse</div>
+        <div class="nav-subitem">Jahresabschlüsse</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
+          <span>WEG-Unterlagen</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/></svg></div>
+          <span>Dienstleister</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <span>Dokumente</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+          <span>Einstellungen</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-label">
+          <div class="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div>
+          <span>Hilfe-Center</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">DH</div>
+      <div class="user-name">Dr. Wolfgang HOLZER</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-subdued)"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- ============ VUE 1 : ÉTAPE 3 PRINCIPALE ============ -->
+    <div class="view active" data-view="main">
+      <button class="back-link" onclick="alert('Zurück zur Liste der Umlaufbeschlüsse')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück zu den Umlaufbeschlüssen
+      </button>
+
+      <div class="page-header">
+        <h1 class="page-title">Umlaufbeschluss - April 2026</h1>
+        <button class="btn-destructive">Umlaufbeschluss löschen</button>
+      </div>
+
+      <div class="stepper">
+        <div class="step done">
+          <div class="step-number"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="step-label">Vorbereitung</div>
+        </div>
+        <div class="step-line done"></div>
+        <div class="step done">
+          <div class="step-number"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="step-label">Versand</div>
+        </div>
+        <div class="step-line done"></div>
+        <div class="step active">
+          <div class="step-number">3</div>
+          <div class="step-label">Abstimmung</div>
+        </div>
+      </div>
+
+      <div class="info-banner">
+        <svg class="info-banner-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div class="info-banner-body">
+          <div class="info-banner-title">Welchen Nachweis benötigen Sie?</div>
+          Um einen Umlaufbeschluss zu validieren, benötigen Sie schriftliche Nachweise von Ihren Eigentümern. Als Nachweis gelten ein unterzeichnetes Dokument, eine E-Mail-Antwort, ein Screenshot einer SMS oder einer WhatsApp-Nachricht.
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title-row">
+          <span class="section-caret">›</span>
+          <span class="section-title">Stimmen der Eigentümer erfassen</span>
+        </div>
+        <p class="section-desc">
+          Ein Eigentümer hat Ihnen seine Stimmen per E-Mail, SMS, WhatsApp oder auf einem Papierformular übermittelt? Erfassen Sie seine Stimmen in Matera für jeden Beschluss der Tagesordnung.
+        </p>
+        <button class="btn-primary" onclick="showView('saisir')">Stimmen erfassen</button>
+      </div>
+
+      <div class="tracking-card">
+        <div class="tracking-illus">
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none"><rect x="8" y="12" width="38" height="44" rx="3" fill="#FFFFFF" stroke="#4E49FC" stroke-width="2"/><circle cx="22" cy="28" r="8" fill="#F5F5FF" stroke="#4E49FC" stroke-width="2"/><path d="M22 22 V28 L26 30" stroke="#4E49FC" stroke-width="2" stroke-linecap="round"/><line x1="33" y1="40" x2="42" y2="40" stroke="#4E49FC" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="44" x2="42" y2="44" stroke="#A2A1AF" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="48" x2="36" y2="48" stroke="#A2A1AF" stroke-width="2" stroke-linecap="round"/><rect x="40" y="18" width="16" height="20" rx="2" fill="#F5F5FF" stroke="#4E49FC" stroke-width="2"/><line x1="44" y1="24" x2="52" y2="24" stroke="#4E49FC" stroke-width="1.5" stroke-linecap="round"/><line x1="44" y1="28" x2="52" y2="28" stroke="#4E49FC" stroke-width="1.5" stroke-linecap="round"/><line x1="44" y1="32" x2="48" y2="32" stroke="#4E49FC" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="tracking-content">
+          <div class="tracking-title">Übersicht der Eigentümerstimmen</div>
+          <ul>
+            <li>Die Stimmen, die Sie für die Eigentümer erfasst haben</li>
+            <li>Die Nachweise zu jeder Stimme</li>
+          </ul>
+        </div>
+        <div class="tracking-right">
+          <div class="tracking-count">2 Stimmen</div>
+          <button class="btn-primary" onclick="showView('voir')">Stimmen anzeigen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VUE 2 : SAISIR DES VOTES ============ -->
+    <div class="view" data-view="saisir">
+      <button class="back-link" onclick="showView('main')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück
+      </button>
+
+      <h1 class="page-title" style="margin-bottom: 32px;">Stimmen erfassen</h1>
+
+      <div class="sub-stepper">
+
+        <!-- Étape 1 : choisir le copro -->
+        <div class="sub-step done">
+          <div class="sub-step-marker">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="sub-step-content">
+            <div class="sub-step-title">Eigentümer auswählen</div>
+            <label class="form-label">Eigentümer</label>
+            <select class="form-select" style="max-width: 500px;">
+              <option>HOLZER Dr. Wolfgang</option>
+              <option>GANSBÜHLER Karl Heinz</option>
+              <option>WÜBKER Gabriele</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Étape 2 : saisir les votes -->
+        <div class="sub-step active">
+          <div class="sub-step-marker">2</div>
+          <div class="sub-step-content">
+            <div class="sub-step-title">Stimmen von HOLZER Dr. Wolfgang erfassen</div>
+
+            <!-- Résolution 1 -->
+            <div class="resolution-card">
+              <div class="resolution-title">
+                1 - Genehmigung der Jahresabrechnung 2025
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <p class="resolution-desc">
+                Die Eigentümergemeinschaft genehmigt die Jahresabrechnung zum 31. Dezember 2025, wie sie vom Verwalter vorgelegt wurde.
+              </p>
+              <div class="vote-buttons">
+                <button class="vote-btn selected pour" onclick="selectVote(this)">Ja</button>
+                <button class="vote-btn" onclick="selectVote(this)">Enthaltung</button>
+                <button class="vote-btn" onclick="selectVote(this)">Nein</button>
+              </div>
+              <button class="add-comment-btn">+ Kommentar oder Bedingung hinzufügen</button>
+            </div>
+
+            <!-- Résolution 2 -->
+            <div class="resolution-card">
+              <div class="resolution-title">
+                2 - Entlastung des Verwalters für das Geschäftsjahr 2025
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <p class="resolution-desc">
+                Die Eigentümergemeinschaft entlastet den Verwalter für seine Verwaltung im Geschäftsjahr, das am 31. Dezember 2025 endete.
+              </p>
+              <div class="vote-buttons">
+                <button class="vote-btn selected pour" onclick="selectVote(this)">Ja</button>
+                <button class="vote-btn" onclick="selectVote(this)">Enthaltung</button>
+                <button class="vote-btn" onclick="selectVote(this)">Nein</button>
+              </div>
+              <button class="add-comment-btn">+ Kommentar oder Bedingung hinzufügen</button>
+            </div>
+
+            <!-- Résolution 3 -->
+            <div class="resolution-card">
+              <div class="resolution-title">
+                3 - Genehmigung des Wirtschaftsplans 2026
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <p class="resolution-desc">
+                Die Eigentümergemeinschaft genehmigt den Wirtschaftsplan 2026 in Höhe von insgesamt 48.500 €, verteilt nach den allgemeinen Miteigentumsanteilen.
+              </p>
+              <div class="vote-buttons">
+                <button class="vote-btn" onclick="selectVote(this)">Ja</button>
+                <button class="vote-btn selected abstention" onclick="selectVote(this)">Enthaltung</button>
+                <button class="vote-btn" onclick="selectVote(this)">Nein</button>
+              </div>
+              <button class="add-comment-btn">+ Kommentar oder Bedingung hinzufügen</button>
+            </div>
+
+            <!-- Résolution 4 -->
+            <div class="resolution-card">
+              <div class="resolution-title">
+                4 - Wartungsvertrag für die Gemeinschaftsheizung
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <p class="resolution-desc">
+                Die Eigentümergemeinschaft genehmigt den Abschluss eines neuen jährlichen Wartungsvertrags mit der Firma Thermotech in Höhe von 2.400 € brutto pro Jahr.
+              </p>
+              <div class="vote-buttons">
+                <button class="vote-btn" onclick="selectVote(this)">Ja</button>
+                <button class="vote-btn" onclick="selectVote(this)">Enthaltung</button>
+                <button class="vote-btn selected contre" onclick="selectVote(this)">Nein</button>
+              </div>
+              <button class="add-comment-btn">+ Kommentar oder Bedingung hinzufügen</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Étape 3 : justificatif -->
+        <div class="sub-step todo">
+          <div class="sub-step-marker">3</div>
+          <div class="sub-step-content">
+            <div class="sub-step-title">Nachweis hinzufügen</div>
+            <p style="font-size: 14px; color: var(--text-subdued); margin-bottom: 12px;">
+              Screenshot der E-Mail, SMS oder WhatsApp-Nachricht, oder vom Eigentümer unterzeichnetes Dokument.
+            </p>
+            <div class="proof-upload-area">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4E49FC" stroke-width="1.5" style="margin-bottom: 8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p>Dateien hier ablegen oder</p>
+              <button class="btn-primary btn-sm">Dateien auswählen</button>
+              <p style="margin-top: 12px; font-size: 12px;">Maximal 50 MB — PDF, PNG oder JPEG</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 32px;">
+        <button class="btn-secondary" onclick="showView('main')">Abbrechen</button>
+        <button class="btn-primary" onclick="showView('voir')">Stimmen speichern</button>
+      </div>
+    </div>
+
+    <!-- ============ VUE 3 : VOIR LES VOTES ============ -->
+    <div class="view" data-view="voir">
+      <button class="back-link" onclick="showView('main')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück
+      </button>
+
+      <div class="page-header-simple">
+        <h1 class="page-title">Erfasste Stimmen</h1>
+        <button class="actions-dropdown">
+          Aktionen
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+
+      <div class="votes-table-card">
+        <div class="votes-table-header">
+          <h3>2 Eigentümer haben abgestimmt</h3>
+          <button class="btn-secondary btn-sm" onclick="showView('saisir')">Stimme erfassen</button>
+        </div>
+
+        <table class="votes-table">
+          <thead>
+            <tr>
+              <th>Eigentümer</th>
+              <th>Datum der Abstimmung</th>
+              <th>Stimmen anzeigen</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>HOLZER Dr. Wolfgang</td>
+              <td>15.04.2026</td>
+              <td><button class="btn-primary btn-sm">Anzeigen</button></td>
+              <td style="width: 60px;">
+                <button class="trash-btn" title="Löschen">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>GANSBÜHLER Karl Heinz</td>
+              <td>16.04.2026</td>
+              <td><button class="btn-primary btn-sm">Anzeigen</button></td>
+              <td>
+                <button class="trash-btn" title="Löschen">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ VUE 4 : VOTES CLOS ============ -->
+    <div class="view" data-view="closed">
+      <button class="back-link" onclick="alert('Zurück zur Liste der Umlaufbeschlüsse')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück
+      </button>
+
+      <div class="page-header">
+        <h1 class="page-title">Umlaufbeschluss - April 2026</h1>
+        <button class="btn-outlined-brand" onclick="showView('main')">Umlaufbeschluss wieder öffnen</button>
+      </div>
+
+      <div class="closed-layout">
+
+        <!-- Colonne gauche : résolutions -->
+        <div>
+          <div class="closed-col-title">Beschlüsse</div>
+
+          <!-- Résolution 1 -->
+          <div class="reso-accordion open">
+            <div class="reso-accordion-header" onclick="toggleAccordion(this)">
+              <div class="reso-accordion-title-wrap">
+                <span class="reso-accordion-title">1 - Genehmigung der Jahresabrechnung 2025</span>
+                <span class="status-tag approved">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Angenommen
+                </span>
+              </div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="reso-accordion-body">
+              Die Eigentümergemeinschaft genehmigt die Jahresabrechnung zum 31. Dezember 2025, wie sie vom Verwalter vorgelegt wurde.
+            </div>
+          </div>
+
+          <!-- Résolution 2 -->
+          <div class="reso-accordion">
+            <div class="reso-accordion-header" onclick="toggleAccordion(this)">
+              <div class="reso-accordion-title-wrap">
+                <span class="reso-accordion-title">2 - Entlastung des Verwalters für das Geschäftsjahr 2025</span>
+                <span class="status-tag approved">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Angenommen
+                </span>
+              </div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="reso-accordion-body">
+              Die Eigentümergemeinschaft entlastet den Verwalter für seine Verwaltung im Geschäftsjahr, das am 31. Dezember 2025 endete.
+            </div>
+          </div>
+
+          <!-- Résolution 3 -->
+          <div class="reso-accordion">
+            <div class="reso-accordion-header" onclick="toggleAccordion(this)">
+              <div class="reso-accordion-title-wrap">
+                <span class="reso-accordion-title">3 - Genehmigung des Wirtschaftsplans 2026</span>
+                <span class="status-tag rejected">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Abgelehnt
+                </span>
+              </div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="reso-accordion-body">
+              Die Eigentümergemeinschaft genehmigt den Wirtschaftsplan 2026 in Höhe von insgesamt 48.500 €, verteilt nach den allgemeinen Miteigentumsanteilen.
+            </div>
+          </div>
+
+          <!-- Résolution 4 -->
+          <div class="reso-accordion">
+            <div class="reso-accordion-header" onclick="toggleAccordion(this)">
+              <div class="reso-accordion-title-wrap">
+                <span class="reso-accordion-title">4 - Wartungsvertrag für die Gemeinschaftsheizung</span>
+                <span class="status-tag rejected">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Abgelehnt
+                </span>
+              </div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="reso-accordion-body">
+              Die Eigentümergemeinschaft genehmigt den Abschluss eines neuen jährlichen Wartungsvertrags mit der Firma Thermotech in Höhe von 2.400 € brutto pro Jahr.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Colonne droite : document -->
+        <div>
+          <div class="closed-col-title">Umlaufbeschluss-Dokument</div>
+          <div class="pdf-card">
+            <div class="pdf-icon-box">PDF</div>
+            <div class="pdf-filename">Verkündung des Umlaufbeschlusses 17_04_2026.pdf</div>
+            <svg class="pdf-download" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer fixe : uniquement sur vue 1 -->
+    <div class="footer-bar" id="footer-bar">
+      <button class="btn-secondary">← Versand wieder öffnen</button>
+      <button class="btn-primary" onclick="showView('closed')">Abstimmung schließen</button>
+    </div>
+  </main>
+
+  <!-- ============ RAIL DROIT ============ -->
+  <aside class="right-rail">
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+    <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+  </aside>
+
+</div>
+
+<div class="help-bubble">?</div>
+
+<script>
+  function showView(viewName) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelector('[data-view="' + viewName + '"]').classList.add('active');
+
+    // Footer visible uniquement sur la vue 1
+    const footer = document.getElementById('footer-bar');
+    footer.style.display = viewName === 'main' ? 'flex' : 'none';
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function selectVote(btn) {
+    const group = btn.parentElement;
+    group.querySelectorAll('.vote-btn').forEach(b => {
+      b.classList.remove('selected', 'pour', 'abstention', 'contre');
+    });
+    btn.classList.add('selected');
+    const label = btn.textContent.trim().toLowerCase();
+    btn.classList.add(label);
+  }
+
+  function toggleAccordion(headerEl) {
+    headerEl.parentElement.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
